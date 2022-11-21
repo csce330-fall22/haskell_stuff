@@ -73,6 +73,32 @@ encodeText tbl text = concat (map (encodeChar tbl) text)
 encodeChar :: HuffTable -> Char -> String
 encodeChar codes c = snd ( head (filter (\(ch,s)->ch==c) codes ) )
 
+decodeText :: HuffTable -> String -> String
+decodeText _ []       = []
+decodeText tbl codes = c: decodeText tbl (drop len codes)
+    where
+        c = firstChar tbl 1 codes
+        code =encodeChar tbl c
+        len = length code 
+
+firstChar tbl n text = f code
+    where
+        code        = getChar' tbl (take n text)
+        f Nothing   = firstChar tbl (n+1) text
+        f (Just cd) = cd
+
+getChar' :: HuffTable -> String -> Maybe Char
+getChar' tbl prefix = if null code_l then Nothing else Just (fst (head code_l))
+    where
+        code_l = filter(\(c,code)->code == prefix) tbl
+
+even_nat :: Int -> Bool
+even_nat 0 = True
+even_nat n = if n<=0 then False else odd_nat (n-1)
+
+odd_nat :: Int -> Bool
+odd_nat n = even_nat (n-1)
+
 table = getCodes get350Slide38
 
 get350Slide38 = [('A',0.35),('B',0.1),('C',0.2),('D',0.2),('_',0.15)]
